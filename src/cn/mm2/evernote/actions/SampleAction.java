@@ -1,13 +1,16 @@
 package cn.mm2.evernote.actions;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -24,6 +27,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+import org.eclipse.ui.progress.IProgressService;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.EvernoteApi;
 import org.scribe.model.Token;
@@ -32,6 +36,7 @@ import org.scribe.oauth.OAuthService;
 
 import com.evernote.edam.type.Notebook;
 
+import cn.mm2.evernote.ui.AccountUtil;
 import cn.mm2.evernote.ui.BrowserExample;
 import cn.mm2.evernote.ui.EvernoteInvoke;
 import cn.mm2.evernote.ui.TokenStoreUtil;
@@ -51,7 +56,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	private OAuthService mService;
 	private Token mRequestToken;
 	private String key;
-	
+	private IProgressMonitor mProgressMonitor;
 
 	/**
 	 * The constructor.
@@ -68,11 +73,32 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	public void run(IAction action) {
 		String token = TokenStoreUtil.getToken();
 		if(token != null && token.length() > 0){
-			saveNote(token);
+			saveNoteByProgressBar(token);
 		}else{
 			initOauth();	
 		}
-		getCurrentCode();
+		//getCurrentCode();
+	}
+	
+	private void saveNoteByProgressBar(final String token){
+		IProgressService progressService = PlatformUI.getWorkbench().getProgressService();    
+		try {
+			progressService.runInUI(    
+				      PlatformUI.getWorkbench().getProgressService(),
+				       new IRunnableWithProgress() {    
+				          public void run(IProgressMonitor monitor) {    
+				             // UI主线程，可进行UI操作    
+				        	  saveNote(token);
+				          }    
+				       },
+				       null);
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 	
 	private void saveNote(String token){
@@ -90,9 +116,9 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	
 	private void initOauth(){
 		     mService = new ServiceBuilder()
-	        .provider(EvernoteApi.Sandbox.class)
-	        .apiKey("xinmeng2011")
-	        .apiSecret("da15a26172f0f1e2").callback("www.baidu.com")
+	        .provider(AccountUtil.getApiClass())
+	        .apiKey(AccountUtil.API_KEY)
+	        .apiSecret(AccountUtil.API_SECRET).callback("www.baidu.com")
 	        .build();
 			 
 			 mRequestToken = mService.getRequestToken();
@@ -170,7 +196,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
         while (!shell.isDisposed()){//如果shell主窗口没有关闭，则一直循环
             if(!display.readAndDispatch()) //如果display不忙，就让display处于休眠状态
                 display.sleep();
-        }
+        }123456yxm
         display.dispose(); //释放display资源
 	 */
 	private void uiTest(String url){        
@@ -226,7 +252,8 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 					accessToken.getToken());
 		 TokenStoreUtil.saveToken(accessToken.getToken());
 		 EvernoteInvoke.setToken(accessToken.getToken());
-		 EvernoteInvoke.getSingle().saveNote("123", "mm", null);
+		 //EvernoteInvoke.getSingle().saveNote("123", "mm", null);
+		 saveNoteByProgressBar(accessToken.getToken());
 	}
 	
 	private  String getCurrentCode(){

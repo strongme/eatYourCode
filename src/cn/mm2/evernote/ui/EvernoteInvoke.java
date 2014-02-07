@@ -21,8 +21,6 @@ public class EvernoteInvoke {
 	private NoteStore.Client mNoteStore;
 	private UserStore.Client mUserStore;
 	private static EvernoteInvoke mSingle;
-	private static final String NoteStoreUrl = "https://sandbox.evernote.com/edam/user";
-	
 	private static final String NOTEBOOK_NAME= "Elephant eat your code";
 	public static void setToken(String token){
 		if(mToken.length() == 0){
@@ -42,7 +40,7 @@ public class EvernoteInvoke {
 	private EvernoteInvoke(String token){	  
 		THttpClient userStoreTrans = null;
 		try {
-			userStoreTrans = new THttpClient(NoteStoreUrl);
+			userStoreTrans = new THttpClient(AccountUtil.getNoteStoreUrl());
 		} catch (TTransportException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
