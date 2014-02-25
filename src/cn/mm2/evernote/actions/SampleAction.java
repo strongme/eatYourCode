@@ -56,7 +56,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	private OAuthService mService;
 	private Token mRequestToken;
 	private String key;
-	private IProgressMonitor mProgressMonitor;
+	private Shell mBrowsershell;
 
 	/**
 	 * The constructor.
@@ -71,12 +71,13 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
 	public void run(IAction action) {
-		String token = TokenStoreUtil.getToken();
-		if(token != null && token.length() > 0){
-			saveNoteByProgressBar(token);
-		}else{
+		//AccountUtil.getBoostUrl();
+//		String token = TokenStoreUtil.getToken();
+//		if(token != null && token.length() > 0){
+//			saveNoteByProgressBar(token);
+//		}else{
 			initOauth();	
-		}
+//		}
 		//getCurrentCode();
 	}
 	
@@ -201,13 +202,13 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	 */
 	private void uiTest(String url){        
 		Display display = Display.getDefault();
-	    Shell shell = new Shell(display);
-	    shell.setLayout(new FillLayout());
-	    shell.setText("Browser example");
-	    BrowserExample instance = new BrowserExample(shell);
-	    shell.open();
+	    mBrowsershell = new Shell(display);
+	    mBrowsershell.setLayout(new FillLayout());
+	    mBrowsershell.setText("Browser example");
+	    BrowserExample instance = new BrowserExample(mBrowsershell);
+	    mBrowsershell.open();
 	    instance.goToUrl(url,mUrlListener);
-	    while (!shell.isDisposed()) {
+	    while (!mBrowsershell.isDisposed()) {
 	      if (!display.readAndDispatch())
 	        display.sleep();
 	    }
@@ -236,6 +237,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 				if(nowUrl.lastIndexOf("#") > posbegin){
 					posend= nowUrl.lastIndexOf("#");
 				}
+				
                 key = nowUrl.substring(posbegin,posend);
     			goToVerifier(key);
 			}

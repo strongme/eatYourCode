@@ -160,4 +160,7 @@ public class EvernoteInvoke {
 		}
 		saveNote(title, note, nb);
 	}
+	
+	public void testbootstrap(){
+		 }
 }
